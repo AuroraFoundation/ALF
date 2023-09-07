@@ -1,0 +1,69 @@
+#!/usr/bin/env -S alf highlight
+
+# This is a comment.
+
+# Maintainer: @ALizarazoTellez
+
+Title: The Song Title.
+
+# Alternative names for the song.
+Names:
+  - Song Title.
+  - Other Song Title.
+
+Author: The Author.
+
+# In some options, you can also provide multiple values, you just need to add
+# an "s" at the end of the name. For example, if the song has several authors,
+# the option would look like this:
+#
+#  Authors:
+#    - First Author.
+#    - Second Author.
+
+# Plural Avaible.
+Artist: The Artist.
+
+Album: The Album.
+
+Lyric:
+
+  # Establish the order of the verses of the song based on its parts.
+  Order:
+    # Method 1: Part name.
+    - Intro
+    # Method 2: Song name with identifier.
+    - Stanza 1
+    - Bridge
+    # Method 3: Name of the song with identifier and special instruction
+    # (repeat in this case).
+    - Stanza 2 (Repeat 3)
+    - Chorus   (Repeat 2)
+    - Outro
+
+  # Each part must begin with a valid name, and optionally, an identifier.
+  Intro:
+    Oh, Oh, Oh...
+
+  Bridge:
+    Uhh, la, la.
+
+  Stanza 1:
+    The roses are red,
+    The violet is blue.
+
+  Stanza 2:
+    The honey is sweet,
+    And so are you.
+
+  Chorus:
+    I love chocolate more than you!
+
+  Outro:
+    Violets are blue.
+
+
+# Notes are "public" comments to be displayed by the rendering program.
+Notes:
+  - Violets are not blue, but violets.
+  - The year is 1590.
