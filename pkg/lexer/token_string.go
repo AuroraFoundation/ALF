@@ -10,12 +10,13 @@ func _() {
 	var x [1]struct{}
 	_ = x[TokenEOF-1]
 	_ = x[TokenComment-2]
-	_ = x[TokenName-3]
+	_ = x[TokenNewline-3]
+	_ = x[TokenName-4]
 }
 
-const _Token_name = "EOFCommentName"
+const _Token_name = "EOFCommentNewlineName"
 
-var _Token_index = [...]uint8{0, 3, 10, 14}
+var _Token_index = [...]uint8{0, 3, 10, 17, 21}
 
 func (i Token) String() string {
 	i -= 1

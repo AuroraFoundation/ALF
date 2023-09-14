@@ -43,50 +43,61 @@ func TestLexerLocation(t *testing.T) {
 	t.Run("line", func(t *testing.T) {
 		items := itemsFromString(t, "# ABC.\n# XYZ.")
 
+		// Literal "# ABC.".
 		got := (<-items).Line
 		want := 0
-
 		assertInt(t, got, want)
 
+		// Literal "\n".
+		// Here the newline character is treated as a token, which
+		// takes effect AFTER it has been processed.
+		got = (<-items).Line
+		want = 0
+		assertInt(t, got, want)
+
+		// Literal "# XYZ.".
 		got = (<-items).Line
 		want = 1
-
 		assertInt(t, got, want)
 	})
 
 	t.Run("column", func(t *testing.T) {
 		items := itemsFromString(t, "  # 1.")
 
+		// Literal "  " (indentation).
 		got := (<-items).Col
 		want := 0
-
 		assertInt(t, got, want)
 
+		// Literal "# 1.".
 		got = (<-items).Col
 		want = 2
-
 		assertInt(t, got, want)
 	})
 
 	t.Run("column with newline", func(t *testing.T) {
 		items := itemsFromString(t, "# 1.\n  # 2.")
 
-		// Comment.
+		// Literal "# 1.".
 		got := (<-items).Col
 		want := 0
-
 		assertInt(t, got, want)
 
-		// Indent.
+		// Literal "\n".
+		// Here the newline character is treated as a token, which
+		// takes effect AFTER it has been processed.
+		got = (<-items).Col
+		want = 4
+		assertInt(t, got, want)
+
+		// Literal "  " (indentation).
 		got = (<-items).Col
 		want = 0
-
 		assertInt(t, got, want)
 
-		// Comment.
+		// Literal "# 2.".
 		got = (<-items).Col
 		want = 2
-
 		assertInt(t, got, want)
 	})
 }

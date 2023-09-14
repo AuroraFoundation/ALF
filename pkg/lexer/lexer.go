@@ -27,6 +27,7 @@ type Token int
 const (
 	TokenEOF Token = iota + 1
 	TokenComment
+	TokenNewline
 	TokenName
 )
 
@@ -44,27 +45,28 @@ func New(r io.Reader) (*Lexer, <-chan Item) {
 }
 
 func (l *Lexer) run() {
-Loop:
 	for {
-		switch l.next() {
-		case 0: // Error.
-			break Loop
+		switch l.peek() {
+		case 0:
+			l.items <- Item{Token: TokenEOF}
+			return
 		case '\n':
-			continue
+			l.stateNewline()
 
 		case '#':
-			l.backup()
 			l.stateComment()
 		default:
-			l.backup()
 			l.stateName()
 		}
 	}
+}
 
-	if r := l.peek(); r == 0 {
-		l.items <- Item{Token: TokenEOF}
-		return
+func (l *Lexer) stateNewline() {
+	if !l.accept("\n") {
+		panic("invalid newline")
 	}
+
+	l.emit(TokenNewline)
 }
 
 func (l *Lexer) stateComment() {
