@@ -11,12 +11,13 @@ func _() {
 	_ = x[TokenEOF-1]
 	_ = x[TokenComment-2]
 	_ = x[TokenNewline-3]
-	_ = x[TokenName-4]
+	_ = x[TokenIndent-4]
+	_ = x[TokenName-5]
 }
 
-const _Token_name = "EOFCommentNewlineName"
+const _Token_name = "EOFCommentNewlineIndentName"
 
-var _Token_index = [...]uint8{0, 3, 10, 17, 21}
+var _Token_index = [...]uint8{0, 3, 10, 17, 23, 27}
 
 func (i Token) String() string {
 	i -= 1

@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -28,6 +29,7 @@ const (
 	TokenEOF Token = iota + 1
 	TokenComment
 	TokenNewline
+	TokenIndent
 	TokenName
 )
 
@@ -52,27 +54,28 @@ func (l *Lexer) run() {
 			return
 		case '\n':
 			l.stateNewline()
-
 		case '#':
 			l.stateComment()
+		case ' ':
+			l.stateIndent()
 		default:
 			l.stateName()
 		}
 	}
 }
 
-func (l *Lexer) stateNewline() {
-	if !l.accept("\n") {
-		panic("invalid newline")
-	}
+func (l *Lexer) stateIndent() {
+	l.mustAccept(" ")
+	l.emit(TokenIndent)
+}
 
+func (l *Lexer) stateNewline() {
+	l.mustAccept("\n")
 	l.emit(TokenNewline)
 }
 
 func (l *Lexer) stateComment() {
-	if !l.accept("#") {
-		panic("invalid comment")
-	}
+	l.mustAccept("#")
 
 Loop:
 	for {
@@ -93,10 +96,7 @@ Loop:
 func (l *Lexer) stateName() {
 	const ascii = `AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz`
 
-	if !l.accept(ascii + ": ") {
-		panic("invalid text")
-	}
-
+	l.mustAccept(ascii + ": ")
 	l.emit(TokenName)
 }
 
@@ -112,6 +112,14 @@ func (l *Lexer) emit(token Token) {
 		Literal: literal,
 		Line:    line,
 		Col:     col,
+	}
+}
+
+func (l *Lexer) mustAccept(s string) {
+	r := l.peek()
+
+	if !l.accept(s) {
+		panic(fmt.Sprintf("%q not in any of %q", r, s))
 	}
 }
 

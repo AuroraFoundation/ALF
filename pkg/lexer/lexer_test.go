@@ -28,6 +28,11 @@ func TestLexerToken(t *testing.T) {
 			"",
 			lexer.TokenEOF,
 		},
+		{
+			"indent",
+			"  ",
+			lexer.TokenIndent,
+		},
 	}
 
 	for _, tt := range cases {
