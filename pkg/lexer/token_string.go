@@ -12,12 +12,15 @@ func _() {
 	_ = x[TokenComment-2]
 	_ = x[TokenNewline-3]
 	_ = x[TokenIndent-4]
-	_ = x[TokenName-5]
+	_ = x[TokenColon-5]
+	_ = x[TokenWhitespace-6]
+	_ = x[TokenName-7]
+	_ = x[TokenText-8]
 }
 
-const _Token_name = "EOFCommentNewlineIndentName"
+const _Token_name = "EOFCommentNewlineIndentColonWhitespaceNameText"
 
-var _Token_index = [...]uint8{0, 3, 10, 17, 23, 27}
+var _Token_index = [...]uint8{0, 3, 10, 17, 23, 28, 38, 42, 46}
 
 func (i Token) String() string {
 	i -= 1

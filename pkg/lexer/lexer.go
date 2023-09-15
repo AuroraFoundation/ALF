@@ -30,10 +30,15 @@ const (
 	TokenComment
 	TokenNewline
 	TokenIndent
+	TokenColon
+	TokenWhitespace
 	TokenName
+	TokenText
 )
 
 //go:generate stringer -trimprefix Token -type Token
+
+type stateFn func() stateFn
 
 func New(r io.Reader) (*Lexer, <-chan Item) {
 	lex := Lexer{
@@ -47,34 +52,40 @@ func New(r io.Reader) (*Lexer, <-chan Item) {
 }
 
 func (l *Lexer) run() {
-	for {
-		switch l.peek() {
-		case 0:
-			l.items <- Item{Token: TokenEOF}
-			return
-		case '\n':
-			l.stateNewline()
-		case '#':
-			l.stateComment()
-		case ' ':
-			l.stateIndent()
-		default:
-			l.stateName()
-		}
+	for state := l.initState(); state != nil; {
+		state = state()
 	}
 }
 
-func (l *Lexer) stateIndent() {
+func (l *Lexer) initState() stateFn {
+	switch l.peek() {
+	case 0:
+		l.items <- Item{Token: TokenEOF, Line: l.line, Col: l.col}
+		return nil
+	case '\n':
+		return l.stateNewline
+	case '#':
+		return l.stateComment
+	case ' ':
+		return l.stateIndent
+	default:
+		return l.stateName
+	}
+}
+
+func (l *Lexer) stateIndent() stateFn {
 	l.mustAccept(" ")
 	l.emit(TokenIndent)
+	return l.initState
 }
 
-func (l *Lexer) stateNewline() {
+func (l *Lexer) stateNewline() stateFn {
 	l.mustAccept("\n")
 	l.emit(TokenNewline)
+	return l.initState
 }
 
-func (l *Lexer) stateComment() {
+func (l *Lexer) stateComment() stateFn {
 	l.mustAccept("#")
 
 Loop:
@@ -86,18 +97,59 @@ Loop:
 			l.backup()
 			break Loop
 		default:
-			l.tokenLiteral += string(r)
+			l.append(r)
 		}
 	}
 
 	l.emit(TokenComment)
+
+	return l.initState
 }
 
-func (l *Lexer) stateName() {
+func (l *Lexer) stateName() stateFn {
 	const ascii = `AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz`
 
-	l.mustAccept(ascii + ": ")
+	l.mustAccept(ascii)
 	l.emit(TokenName)
+
+	return l.stateColon
+}
+
+func (l *Lexer) stateColon() stateFn {
+	l.mustAccept(":")
+	l.emit(TokenColon)
+
+	if l.peek() == ' ' {
+		l.emitWhitespace()
+	}
+
+	return l.stateText
+}
+
+func (l *Lexer) stateText() stateFn {
+	l.startTokenLine = l.line
+	l.startTokenCol = l.col
+
+	for {
+		switch r := l.next(); r {
+		case 0:
+			l.emit(TokenText)
+			return l.initState
+		case '\n':
+			l.backup()
+			l.emit(TokenText)
+			return l.initState
+		default:
+			l.append(r)
+		}
+	}
+
+	return l.initState
+}
+
+func (l *Lexer) emitWhitespace() {
+	l.mustAccept(" ")
+	l.emit(TokenWhitespace)
 }
 
 func (l *Lexer) emit(token Token) {
@@ -134,10 +186,14 @@ func (l *Lexer) accept(s string) bool {
 	}
 
 	for strings.ContainsRune(s, l.peek()) {
-		l.tokenLiteral += string(l.next())
+		l.append(l.next())
 	}
 
 	return true
+}
+
+func (l *Lexer) append(r rune) {
+	l.tokenLiteral += string(r)
 }
 
 func (l *Lexer) peek() rune {

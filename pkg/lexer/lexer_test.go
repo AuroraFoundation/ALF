@@ -1,11 +1,43 @@
 package lexer_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/AuroraFoundation/ALF/pkg/lexer"
 )
+
+func TestLexerItem(t *testing.T) {
+	test := "Name: Hello"
+	want := []lexer.Item{
+		{lexer.TokenName, "Name", 0, 0},
+		{lexer.TokenColon, ":", 0, 4},
+		{lexer.TokenWhitespace, " ", 0, 5},
+		{lexer.TokenText, "Hello", 0, 6},
+		{lexer.TokenEOF, "", 0, 11},
+	}
+
+	var got []lexer.Item
+
+	items := itemsFromString(t, test)
+
+	for {
+		item := <-items
+
+		got = append(got, item)
+
+		if item.Token == lexer.TokenEOF {
+			break
+		}
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Log("Got: ", got)
+		t.Log("Want:", want)
+		t.Error()
+	}
+}
 
 func TestLexerToken(t *testing.T) {
 	cases := []struct {
