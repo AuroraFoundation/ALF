@@ -9,18 +9,18 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[TokenEOF-1]
-	_ = x[TokenComment-2]
-	_ = x[TokenNewline-3]
+	_ = x[TokenNewline-2]
+	_ = x[TokenWhitespace-3]
 	_ = x[TokenIndent-4]
 	_ = x[TokenColon-5]
-	_ = x[TokenWhitespace-6]
+	_ = x[TokenComment-6]
 	_ = x[TokenName-7]
 	_ = x[TokenText-8]
 }
 
-const _Token_name = "EOFCommentNewlineIndentColonWhitespaceNameText"
+const _Token_name = "EOFNewlineWhitespaceIndentColonCommentNameText"
 
-var _Token_index = [...]uint8{0, 3, 10, 17, 23, 28, 38, 42, 46}
+var _Token_index = [...]uint8{0, 3, 10, 20, 26, 31, 38, 42, 46}
 
 func (i Token) String() string {
 	i -= 1
