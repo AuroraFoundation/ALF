@@ -8,6 +8,7 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
+	_ = x[TokenError-0]
 	_ = x[TokenEOF-1]
 	_ = x[TokenNewline-2]
 	_ = x[TokenWhitespace-3]
@@ -18,14 +19,13 @@ func _() {
 	_ = x[TokenText-8]
 }
 
-const _Token_name = "EOFNewlineWhitespaceIndentColonCommentNameText"
+const _Token_name = "ErrorEOFNewlineWhitespaceIndentColonCommentNameText"
 
-var _Token_index = [...]uint8{0, 3, 10, 20, 26, 31, 38, 42, 46}
+var _Token_index = [...]uint8{0, 5, 8, 15, 25, 31, 36, 43, 47, 51}
 
 func (i Token) String() string {
-	i -= 1
 	if i < 0 || i >= Token(len(_Token_index)-1) {
-		return "Token(" + strconv.FormatInt(int64(i+1), 10) + ")"
+		return "Token(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 	return _Token_name[_Token_index[i]:_Token_index[i+1]]
 }

@@ -4,6 +4,7 @@ package lexer
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -30,6 +31,9 @@ type Lexer struct {
 	// The text as it is in the currently processed token source (see
 	// `Lexer.append` and `Lexer.emit`).
 	tkLiteral string
+
+	// Stores errors returned by the reader.
+	err error
 }
 
 // Item contains a token, its literal text and its location in the source file.
@@ -46,7 +50,8 @@ type Token int
 
 // Aurora Lyrics Format (ALF) grammar tokens.
 const (
-	TokenEOF Token = iota + 1
+	TokenError Token = iota
+	TokenEOF
 	TokenNewline
 	TokenWhitespace
 	TokenIndent
@@ -87,6 +92,10 @@ func New(r io.Reader) (*Lexer, <-chan Item) {
 	return &lex, lex.items
 }
 
+func (l *Lexer) Error() error {
+	return l.err
+}
+
 // run starts the execution of the machine (lexer), due to the concurrent
 // nature, it must be called from a goroutine or it will block forever.
 func (l *Lexer) run() {
@@ -100,7 +109,11 @@ func (l *Lexer) run() {
 func (l *Lexer) initState() stateFn {
 	switch l.peek() {
 	case runeError:
-		l.items <- Item{Token: TokenEOF, Line: l.line, Col: l.col}
+		if errors.Is(l.err, io.EOF) {
+			l.items <- Item{Token: TokenEOF, Line: l.line, Col: l.col}
+		} else {
+			l.items <- Item{Token: TokenError, Line: l.line, Col: l.col}
+		}
 
 		return nil
 	case '\n':
@@ -273,6 +286,7 @@ func (l *Lexer) append(r rune) {
 func (l *Lexer) peek() rune {
 	r, err := l.reader.Peek(1)
 	if err != nil {
+		l.err = err
 		return runeError
 	}
 
@@ -284,6 +298,7 @@ func (l *Lexer) peek() rune {
 func (l *Lexer) next() rune {
 	char, _, err := l.reader.ReadRune()
 	if err != nil {
+		l.err = err
 		return runeError
 	}
 

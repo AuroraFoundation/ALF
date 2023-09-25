@@ -1,6 +1,7 @@
 package lexer_test
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -144,15 +145,46 @@ func TestLexerLocation(t *testing.T) {
 	})
 }
 
-func TestLexer(t *testing.T) {
-	t.Run("literal", func(t *testing.T) {
-		items := itemsFromString(t, "# Other.")
+func TestLexerLiteral(t *testing.T) {
+	items := itemsFromString(t, "# Other.")
 
-		got := (<-items).Literal
-		want := "# Other."
+	got := (<-items).Literal
+	want := "# Other."
 
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+type readerError string
+
+func (r readerError) Read([]byte) (int, error) {
+	return 0, errors.New(string(r))
+}
+
+func TestLexerError(t *testing.T) {
+	t.Run("basic", func(t *testing.T) {
+		re := readerError("basic")
+
+		_, items := lexer.New(re)
+
+		want := lexer.TokenError
+		got := (<-items).Token
+
+		assertToken(t, got, want)
+	})
+
+	t.Run("message", func(t *testing.T) {
+		want := "message with error"
+		re := readerError(want)
+
+		lex, items := lexer.New(re)
+		if item := <-items; item.Token != lexer.TokenError {
+			t.Fatalf("Unexpected Token: %v", item)
+		}
+
+		if lex.Error().Error() != want {
+			t.Errorf("got %q, want %q", lex.Error().Error(), want)
 		}
 	})
 }
