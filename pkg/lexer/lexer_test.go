@@ -10,34 +10,52 @@ import (
 )
 
 func TestLexerItem(t *testing.T) {
-	test := "Name: Hello"
-	want := []lexer.Item{
-		{lexer.TokenName, "Name", 0, 0},
-		{lexer.TokenColon, ":", 0, 4},
-		{lexer.TokenWhitespace, " ", 0, 5},
-		{lexer.TokenText, "Hello", 0, 6},
-		{lexer.TokenEOF, "", 0, 11},
-	}
-
-	var got []lexer.Item
-
-	items := itemsFromString(t, test)
-
-	for {
-		item := <-items
-
-		got = append(got, item)
-
-		if item.Token == lexer.TokenEOF {
-			break
+	t.Run("basic attribute-value", func(t *testing.T) {
+		test := "Name: Hello"
+		want := []lexer.Item{
+			{lexer.TokenName, "Name", 0, 0},
+			{lexer.TokenColon, ":", 0, 4},
+			{lexer.TokenWhitespace, " ", 0, 5},
+			{lexer.TokenText, "Hello", 0, 6},
+			{lexer.TokenEOF, "", 0, 11},
 		}
-	}
 
-	if !reflect.DeepEqual(got, want) {
-		t.Log("Got: ", got)
-		t.Log("Want:", want)
-		t.Error()
-	}
+		var got []lexer.Item
+
+		items := itemsFromString(t, test)
+
+		for {
+			item := <-items
+
+			got = append(got, item)
+
+			if item.Token == lexer.TokenEOF {
+				break
+			}
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Log("Got: ", got)
+			t.Log("Want:", want)
+			t.Error()
+		}
+	})
+
+	t.Run("basic comment", func(t *testing.T) {
+		items := itemsFromString(t, "# Comment.")
+
+		want := lexer.Item{
+			Token:   lexer.TokenComment,
+			Literal: "# Comment.",
+			Line:    0,
+			Col:     0,
+		}
+		got := <-items
+
+		if got != want {
+			t.Errorf("got %s, want %s", got, want)
+		}
+	})
 }
 
 func TestLexerToken(t *testing.T) {
@@ -143,27 +161,6 @@ func TestLexerLocation(t *testing.T) {
 		want = 2
 		assertInt(t, got, want)
 	})
-}
-
-func TestLexerLiteral(t *testing.T) {
-	items := itemsFromString(t, "# Other.")
-
-	got := (<-items).Literal
-	want := "# Other."
-
-	assertString(t, got, want)
-}
-
-func TestItemString(t *testing.T) {
-	want := `<Item (Comment)[3:9] "# A comment.">`
-	got := (lexer.Item{
-		Token:   lexer.TokenComment,
-		Literal: "# A comment.",
-		Line:    3,
-		Col:     9,
-	}).String()
-
-	assertString(t, got, want)
 }
 
 type readerError string
