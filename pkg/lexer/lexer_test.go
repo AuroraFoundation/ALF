@@ -58,7 +58,7 @@ func TestLexerItem(t *testing.T) {
 	})
 }
 
-func TestLexerToken(t *testing.T) {
+func TestLexerLineStartToken(t *testing.T) {
 	cases := []struct {
 		desc   string
 		source string
@@ -70,8 +70,8 @@ func TestLexerToken(t *testing.T) {
 			lexer.TokenComment,
 		},
 		{
-			"name",
-			"Attr: Value",
+			"attribute",
+			"Attr:",
 			lexer.TokenName,
 		},
 		{
@@ -80,7 +80,7 @@ func TestLexerToken(t *testing.T) {
 			lexer.TokenEOF,
 		},
 		{
-			"indent",
+			"indent with spaces",
 			"  ",
 			lexer.TokenIndent,
 		},
@@ -98,6 +98,18 @@ func TestLexerToken(t *testing.T) {
 			assertToken(t, got, tt.want)
 		})
 	}
+}
+
+func TestLexerMultilineString(t *testing.T) {
+	items := itemsFromString(t, "\tThis is a multiline string.")
+	want := lexer.TokenText
+
+	// Consume indent token.
+	<-items
+
+	got := (<-items).Token
+
+	assertToken(t, got, want)
 }
 
 func TestLexerLocation(t *testing.T) {

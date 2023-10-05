@@ -153,6 +153,11 @@ func (l *Lexer) stateName() stateFn {
 	const ascii = `AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz`
 
 	l.mustAccept(ascii)
+
+	if l.peek() != ':' {
+		return l.stateText
+	}
+
 	l.emit(TokenName)
 
 	return l.stateColon
@@ -174,8 +179,10 @@ func (l *Lexer) stateColon() stateFn {
 // stateText handles all literal text, typically the value of an attribute; the
 // literal text goes to the end of the line or until a comment is found.
 func (l *Lexer) stateText() stateFn {
-	l.startTkLine = l.line
-	l.startTkCol = l.col
+	if l.startTkLine+l.startTkCol == 0 {
+		l.startTkLine = l.line
+		l.startTkCol = l.col
+	}
 
 	for {
 		switch char := l.next(); char {
