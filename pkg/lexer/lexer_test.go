@@ -18,12 +18,16 @@ func TestLexerOverview(t *testing.T) {
 	}
 	defer file.Close()
 
+	// In theory, if by separating the file into tokens and rebuilding it from
+	// these, we could be ensuring almost perfect functioning of the lexer, or
+	// at least the analysis of the strings.
+
 	var original strings.Builder
 	r := io.TeeReader(file, &original)
 
 	_, items := lexer.New(r)
 
-	var lexed strings.Builder
+	var fromLexer strings.Builder
 	for {
 		item := <-items
 
@@ -31,12 +35,12 @@ func TestLexerOverview(t *testing.T) {
 			break
 		}
 
-		lexed.WriteString(item.Literal)
+		fromLexer.WriteString(item.Literal)
 	}
 
-	if original.String() != lexed.String() {
+	if original.String() != fromLexer.String() {
 		t.Log("Original:\n", original.String())
-		t.Log("Lexed:\n", lexed.String())
+		t.Log("Lexer:\n", fromLexer.String())
 		t.Error("The strings are different.")
 	}
 }
@@ -156,6 +160,8 @@ func TestLexerMiddleToken(t *testing.T) {
 
 		assertToken(t, got, want)
 	})
+
+	// TODO: Check nested attributes.
 }
 
 func TestLexerLocation(t *testing.T) {
@@ -221,14 +227,16 @@ func TestLexerLocation(t *testing.T) {
 	})
 }
 
+// readerError is a mock for check error messages.
 type readerError string
 
+// Read always return a error.
 func (r readerError) Read([]byte) (int, error) {
 	return 0, errors.New(string(r))
 }
 
 func TestLexerError(t *testing.T) {
-	t.Run("basic", func(t *testing.T) {
+	t.Run("token", func(t *testing.T) {
 		re := readerError("basic")
 
 		_, items := lexer.New(re)
@@ -253,6 +261,8 @@ func TestLexerError(t *testing.T) {
 		}
 	})
 }
+
+// Helpers.
 
 func itemsFromString(t *testing.T, s string) <-chan lexer.Item {
 	t.Helper()

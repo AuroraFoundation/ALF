@@ -150,7 +150,8 @@ Loop:
 }
 
 // stateName handles all identifiers that can be found at the beginning of the
-// line, e.g. the name of an attribute.
+// line, e.g. the name of an attribute. And if it doesn't appear to be an
+// attribute, it takes care of invoking `stateText`.
 func (l *Lexer) stateName() stateFn {
 	const ascii = `AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz`
 
@@ -191,6 +192,8 @@ func (l *Lexer) stateList() stateFn {
 // stateText handles all literal text, typically the value of an attribute; the
 // literal text goes to the end of the line or until a comment is found.
 func (l *Lexer) stateText() stateFn {
+	// Set the start of the token, if it has not been done before (since it may
+	// have been set by `Lexer.stateName`.
 	if l.startTkLine+l.startTkCol == 0 {
 		l.startTkLine = l.line
 		l.startTkCol = l.col
