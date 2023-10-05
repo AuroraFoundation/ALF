@@ -107,7 +107,7 @@ func (l *Lexer) initState() stateFn {
 		return l.stateNewline
 	case '#':
 		return l.stateComment
-	case ' ':
+	case ' ', '\t':
 		return l.stateIndent
 	default:
 		return l.stateName
@@ -117,7 +117,7 @@ func (l *Lexer) initState() stateFn {
 // stateIndent handles spaces at the beginning of each line, better known as
 // indentation.
 func (l *Lexer) stateIndent() stateFn {
-	l.mustAccept(" ")
+	l.mustAccept(" \t")
 	l.emit(TokenIndent)
 
 	return l.initState

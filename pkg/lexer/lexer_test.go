@@ -65,6 +65,11 @@ func TestLexerToken(t *testing.T) {
 			"  ",
 			lexer.TokenIndent,
 		},
+		{
+			"indent with tabs",
+			"\t",
+			lexer.TokenIndent,
+		},
 	}
 
 	for _, tt := range cases {
