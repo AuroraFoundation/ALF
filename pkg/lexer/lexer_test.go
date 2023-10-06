@@ -2,12 +2,44 @@ package lexer_test
 
 import (
 	"errors"
+	"io"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/AuroraFoundation/ALF/pkg/lexer"
 )
+
+func TestLexerOverview(t *testing.T) {
+	file, err := os.Open("testdata/overview.alf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	var original strings.Builder
+	r := io.TeeReader(file, &original)
+
+	_, items := lexer.New(r)
+
+	var lexed strings.Builder
+	for {
+		item := <-items
+
+		if item.Token == lexer.TokenEOF {
+			break
+		}
+
+		lexed.WriteString(item.Literal)
+	}
+
+	if original.String() != lexed.String() {
+		t.Log("Original:\n", original.String())
+		t.Log("Lexed:\n", lexed.String())
+		t.Error("The strings are different.")
+	}
+}
 
 func TestLexerItem(t *testing.T) {
 	t.Run("basic attribute-value", func(t *testing.T) {
