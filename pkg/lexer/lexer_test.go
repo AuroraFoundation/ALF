@@ -100,16 +100,30 @@ func TestLexerLineStartToken(t *testing.T) {
 	}
 }
 
-func TestLexerMultilineString(t *testing.T) {
-	items := itemsFromString(t, "\tThis is a multiline string.")
-	want := lexer.TokenText
+func TestLexerMiddleToken(t *testing.T) {
+	t.Run("multiline string", func(t *testing.T) {
+		items := itemsFromString(t, "\tThis is a multiline string.")
+		want := lexer.TokenText
 
-	// Consume indent token.
-	<-items
+		// Consume indent token.
+		<-items
 
-	got := (<-items).Token
+		got := (<-items).Token
 
-	assertToken(t, got, want)
+		assertToken(t, got, want)
+	})
+
+	t.Run("lists", func(t *testing.T) {
+		items := itemsFromString(t, "\t- This is a list.")
+		want := lexer.TokenList
+
+		// Consume indent token.
+		<-items
+
+		got := (<-items).Token
+
+		assertToken(t, got, want)
+	})
 }
 
 func TestLexerLocation(t *testing.T) {

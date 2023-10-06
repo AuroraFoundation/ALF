@@ -34,4 +34,5 @@ const (
 	TokenComment
 	TokenName
 	TokenText
+	TokenList
 )

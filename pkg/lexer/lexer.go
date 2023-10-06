@@ -97,6 +97,8 @@ func (l *Lexer) initState() stateFn {
 		return l.stateComment
 	case ' ', '\t':
 		return l.stateIndent
+	case '-':
+		return l.stateList
 	default:
 		return l.stateName
 	}
@@ -155,6 +157,7 @@ func (l *Lexer) stateName() stateFn {
 	l.mustAccept(ascii)
 
 	if l.peek() != ':' {
+		// This isn't a attribute name, is a text of string!.
 		return l.stateText
 	}
 
@@ -172,6 +175,15 @@ func (l *Lexer) stateColon() stateFn {
 	if l.peek() == ' ' {
 		l.emitWhitespace()
 	}
+
+	return l.stateText
+}
+
+func (l *Lexer) stateList() stateFn {
+	l.mustAccept("-")
+	l.emit(TokenList)
+
+	l.emitWhitespace()
 
 	return l.stateText
 }

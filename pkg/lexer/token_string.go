@@ -17,11 +17,12 @@ func _() {
 	_ = x[TokenComment-6]
 	_ = x[TokenName-7]
 	_ = x[TokenText-8]
+	_ = x[TokenList-9]
 }
 
-const _Token_name = "ErrorEOFNewlineWhitespaceIndentColonCommentNameText"
+const _Token_name = "ErrorEOFNewlineWhitespaceIndentColonCommentNameTextList"
 
-var _Token_index = [...]uint8{0, 5, 8, 15, 25, 31, 36, 43, 47, 51}
+var _Token_index = [...]uint8{0, 5, 8, 15, 25, 31, 36, 43, 47, 51, 55}
 
 func (i Token) String() string {
 	if i < 0 || i >= Token(len(_Token_index)-1) {
