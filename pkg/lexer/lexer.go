@@ -44,6 +44,15 @@ type Item struct {
 	Col     int // Starts from 0.
 }
 
+func (i Item) String() string {
+	return fmt.Sprintf("<Item (%s)[%d:%d] %q>",
+		i.Token,
+		i.Line,
+		i.Col,
+		i.Literal,
+	)
+}
+
 // Token is a unique identifier for each part of the Aurora Lyrics Format (ALF)
 // grammar.
 type Token int

@@ -151,9 +151,19 @@ func TestLexerLiteral(t *testing.T) {
 	got := (<-items).Literal
 	want := "# Other."
 
-	if got != want {
-		t.Errorf("got %q, want %q", got, want)
-	}
+	assertString(t, got, want)
+}
+
+func TestItemString(t *testing.T) {
+	want := `<Item (Comment)[3:9] "# A comment.">`
+	got := (lexer.Item{
+		Token:   lexer.TokenComment,
+		Literal: "# A comment.",
+		Line:    3,
+		Col:     9,
+	}).String()
+
+	assertString(t, got, want)
 }
 
 type readerError string
@@ -196,6 +206,14 @@ func itemsFromString(t *testing.T, s string) <-chan lexer.Item {
 }
 
 func assertToken(t *testing.T, got, want lexer.Token) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func assertString(t *testing.T, got, want string) {
 	t.Helper()
 
 	if got != want {
