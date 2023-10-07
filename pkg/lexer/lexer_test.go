@@ -46,52 +46,87 @@ func TestLexerOverview(t *testing.T) {
 }
 
 func TestLexerItem(t *testing.T) {
-	t.Run("basic attribute-value", func(t *testing.T) {
-		test := "Name: Hello"
-		want := []lexer.Item{
-			{lexer.TokenName, "Name", 0, 0},
-			{lexer.TokenColon, ":", 0, 4},
-			{lexer.TokenWhitespace, " ", 0, 5},
-			{lexer.TokenText, "Hello", 0, 6},
-			{lexer.TokenEOF, "", 0, 11},
-		}
+	cases := []struct {
+		desc string
+		test string
+		want []lexer.Item
+	}{
+		{
+			"basic attribute-value",
+			"Name: Hello",
+			[]lexer.Item{
+				{lexer.TokenName, "Name", 0, 0},
+				{lexer.TokenColon, ":", 0, 4},
+				{lexer.TokenWhitespace, " ", 0, 5},
+				{lexer.TokenText, "Hello", 0, 6},
+			},
+		},
+		{
+			"basic comment",
+			"# Comment.",
+			[]lexer.Item{
+				{lexer.TokenComment, "# Comment.", 0, 0},
+			},
+		},
+		{
+			"nested attribute",
+			"Attribute:\n\tNestedA:\n\t\tNestedB:",
+			[]lexer.Item{
+				{lexer.TokenName, "Attribute", 0, 0},
+				{lexer.TokenColon, ":", 0, 9},
+				{lexer.TokenNewline, "\n", 0, 10},
+				{lexer.TokenIndent, "\t", 1, 0},
+				{lexer.TokenName, "NestedA", 1, 1},
+				{lexer.TokenColon, ":", 1, 8},
+				{lexer.TokenNewline, "\n", 1, 9},
+				{lexer.TokenIndent, "\t\t", 2, 0},
+				{lexer.TokenName, "NestedB", 2, 2},
+				{lexer.TokenColon, ":", 2, 9},
+			},
+		},
+		{
+			"lists",
+			"Notes:\n\t- One Note.\n\t- Other Note.",
+			[]lexer.Item{
+				{lexer.TokenName, "Notes", 0, 0},
+				{lexer.TokenColon, ":", 0, 5},
+				{lexer.TokenNewline, "\n", 0, 6},
+				{lexer.TokenIndent, "\t", 1, 0},
+				{lexer.TokenList, "-", 1, 1},
+				{lexer.TokenWhitespace, " ", 1, 2},
+				{lexer.TokenText, "One Note.", 1, 3},
+				{lexer.TokenNewline, "\n", 1, 12},
+				{lexer.TokenIndent, "\t", 2, 0},
+				{lexer.TokenList, "-", 2, 1},
+				{lexer.TokenWhitespace, " ", 2, 2},
+				{lexer.TokenText, "Other Note.", 2, 3},
+			},
+		},
+	}
 
-		var got []lexer.Item
+	for _, test := range cases {
+		t.Run(test.desc, func(t *testing.T) {
+			items := itemsFromString(t, test.test)
 
-		items := itemsFromString(t, test)
+			var got []lexer.Item
 
-		for {
-			item := <-items
+			for {
+				item := <-items
 
-			got = append(got, item)
+				if item.Token == lexer.TokenEOF {
+					break
+				}
 
-			if item.Token == lexer.TokenEOF {
-				break
+				got = append(got, item)
 			}
-		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Log("Got: ", got)
-			t.Log("Want:", want)
-			t.Error()
-		}
-	})
-
-	t.Run("basic comment", func(t *testing.T) {
-		items := itemsFromString(t, "# Comment.")
-
-		want := lexer.Item{
-			Token:   lexer.TokenComment,
-			Literal: "# Comment.",
-			Line:    0,
-			Col:     0,
-		}
-		got := <-items
-
-		if got != want {
-			t.Errorf("got %s, want %s", got, want)
-		}
-	})
+			if !reflect.DeepEqual(got, test.want) {
+				t.Log("Got: ", got)
+				t.Log("Want:", test.want)
+				t.Error()
+			}
+		})
+	}
 }
 
 func TestLexerLineStartToken(t *testing.T) {
@@ -161,7 +196,17 @@ func TestLexerMiddleToken(t *testing.T) {
 		assertToken(t, got, want)
 	})
 
-	// TODO: Check nested attributes.
+	t.Run("nested", func(t *testing.T) {
+		items := itemsFromString(t, "\tNested:")
+		want := lexer.TokenName
+
+		// Consume indent token.
+		<-items
+
+		got := (<-items).Token
+
+		assertToken(t, got, want)
+	})
 }
 
 func TestLexerLocation(t *testing.T) {

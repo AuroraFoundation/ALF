@@ -177,7 +177,11 @@ func (l *Lexer) stateColon() stateFn {
 		l.emitWhitespace()
 	}
 
-	return l.stateText
+	if l.peek() == '\n' {
+		return l.initState
+	}
+
+	return l.initState
 }
 
 func (l *Lexer) stateList() stateFn {
