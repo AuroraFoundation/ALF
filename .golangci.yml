@@ -136,6 +136,47 @@ linters-settings:
     disable:
       - fieldalignment
 
+  revive:
+    # Maximum number of open files at the same time.
+    # Defaults to unlimited.
+    #max-open-files: 2048
+    # When set to false, ignores files with "GENERATED" header, similar to golint.
+    #ignore-generated-header: false
+    # Sets the default severity.
+    #severity: warning
+    # Enable all available rules.
+    enable-all-rules: true
+    # Sets the default failure confidence.
+    # This means that linting errors with less than 0.8 confidence will be ignored.
+    #confidence: 0.8
+    rules:
+      - name: banned-characters
+        disabled: true
+        arguments: ["l", "1"]
+      - name: argument-limit
+        arguments: [4]
+      - name: function-length
+        disabled: true
+        arguments: [10, 0] # Max number of statements and lines.
+      - name: cognitive-complexity
+        disabled: true
+        arguments: [7]
+      - name: max-public-structs
+        arguments: [3]
+      - name: cyclomatic
+        disabled: true
+        arguments: [10]
+      - name: function-result-limit
+        arguments: [3]
+      - name: line-length-limit
+        arguments: [80]
+      - name: file-header
+        disabled: true
+      - name: add-constant
+        disabled: true
+      - name: unhandled-error
+        disabled: true
+      
   staticcheck:
     # SAxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
     checks: ["*"]
@@ -196,6 +237,7 @@ linters:
     - gosimple
     - govet
     - ineffassign
+    - revive
     - staticcheck
     - stylecheck
     - unused
@@ -203,3 +245,14 @@ linters:
   # Run only fast linters from enabled linters set (first run won't be fast)
   fast: false
 
+issues:
+  include:
+    # Force report of missing comments.
+    - EXC0012
+    - EXC0013
+    - EXC0014
+
+  #exclude-rules:
+    #- path: (.+)_test.go
+      #linters:
+        #- revive

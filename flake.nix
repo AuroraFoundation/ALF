@@ -14,8 +14,9 @@
     with pkgs; {
       devShells."${system}".default = mkShell {
         packages = [
-		  golangci-lint
-		  gotools
+          gofumpt
+          golangci-lint
+          gotools
           gopls
           just
         ];
