@@ -1,6 +1,7 @@
 package parser_test
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -61,6 +62,32 @@ func TestParser(t *testing.T) {
 				Artist: "Gopher.",
 			},
 		},
+		{
+			"attribute names (list)",
+			"Names:\n\t- Test",
+			parser.ALF{
+				Names: []string{"Test"},
+			},
+		},
+		{
+			"attribute notes (list)",
+			"Notes:\n\t- A note.",
+			parser.ALF{
+				Notes: []string{
+					"A note.",
+				},
+			},
+		},
+		{
+			"multiple lists",
+			"Notes:\n\t- Note one.\n\t- Note two.",
+			parser.ALF{
+				Notes: []string{
+					"Note one.",
+					"Note two.",
+				},
+			},
+		},
 	}
 
 	for _, test := range cases {
@@ -85,7 +112,7 @@ func alfFromString(t *testing.T, s string) parser.ALF {
 func assertALF(t *testing.T, got, want parser.ALF) {
 	t.Helper()
 
-	if got != want {
+	if !reflect.DeepEqual(got, want) {
 		t.Logf("Got:  %#v", got)
 		t.Logf("Want: %#v", want)
 		t.Error()

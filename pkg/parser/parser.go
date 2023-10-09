@@ -10,8 +10,10 @@ import (
 type ALF struct {
 	Title  string
 	Author string
+	Names  []string
 	Artist string
 	Album  string
+	Notes  []string
 }
 
 type Parser struct {
@@ -47,6 +49,16 @@ func (p *Parser) Decode() (ALF, error) {
 				alf.Album = item.Literal
 			default:
 				return ALF{}, errors.New("unknown attribute name")
+			}
+
+		case lexer.TokenList:
+			<-items // Consume space.
+			item = <-items
+
+			if attrName == "Names" {
+				alf.Names = append(alf.Names, item.Literal)
+			} else {
+				alf.Notes = append(alf.Notes, item.Literal)
 			}
 
 		case lexer.TokenEOF:
