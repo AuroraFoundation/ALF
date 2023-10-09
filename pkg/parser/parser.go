@@ -7,6 +7,8 @@ import (
 	"github.com/AuroraFoundation/ALF/pkg/lexer"
 )
 
+// ALF contains a structure equivalent to the Aurora Lyrics Format
+// specification.
 type ALF struct {
 	Title  string
 	Author string
@@ -16,16 +18,19 @@ type ALF struct {
 	Notes  []string
 }
 
+// Parser implements a source code file parser in ALF.
 type Parser struct {
 	r io.Reader
 }
 
+// New creates and initializes a new `Parser` structure.
 func New(r io.Reader) *Parser {
 	return &Parser{
 		r,
 	}
 }
 
+// Decode parses and returns an `ALF` structure with the parsed source code.
 func (p *Parser) Decode() (ALF, error) {
 	_, items := lexer.New(p.r)
 
