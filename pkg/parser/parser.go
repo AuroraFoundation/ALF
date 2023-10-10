@@ -32,6 +32,7 @@ type Parser struct {
 	items <-chan lexer.Item
 
 	peek lexer.Item
+	err  error
 }
 
 // New creates and initializes a new `Parser` structure.
@@ -45,6 +46,10 @@ func New(r io.Reader) *Parser {
 
 // Decode parses and returns an `ALF` structure with the parsed source code.
 func (p *Parser) Decode() (ALF, error) {
+	return p.parse(), p.err
+}
+
+func (p *Parser) parse() ALF {
 	var alf ALF
 
 	for {
@@ -52,13 +57,13 @@ func (p *Parser) Decode() (ALF, error) {
 		case lexer.TokenName:
 			switch item.Literal {
 			case "Title":
-				alf.Title = p.parseSimpleAttrVal()
+				alf.Title = p.parseText()
 			case "Author":
-				alf.Author = p.parseSimpleAttrVal()
+				alf.Author = p.parseText()
 			case "Artist":
-				alf.Artist = p.parseSimpleAttrVal()
+				alf.Artist = p.parseText()
 			case "Album":
-				alf.Album = p.parseSimpleAttrVal()
+				alf.Album = p.parseText()
 			case "Names":
 				alf.Names = p.parseList(0)
 			case "Notes":
@@ -66,11 +71,12 @@ func (p *Parser) Decode() (ALF, error) {
 			case "Lyric":
 				alf.Lyric = p.parseLyric()
 			default:
-				return ALF{}, errors.New(fmt.Sprintf("unknown attribute name %q", item.Literal))
+				p.err = errors.New(fmt.Sprintf("unknown attribute name %q", item.Literal))
+				return alf
 			}
 
 		case lexer.TokenEOF:
-			return alf, nil
+			return alf
 		}
 	}
 }
@@ -104,7 +110,7 @@ func (p *Parser) parseLyric() Lyric {
 	}
 }
 
-func (p *Parser) parseList(n int) []string {
+func (p *Parser) parseList(indent int) []string {
 	var list []string
 
 	// Consume colon.
@@ -120,7 +126,7 @@ func (p *Parser) parseList(n int) []string {
 		p.nextItem()
 
 		if item.Token == lexer.TokenNewline {
-			if p.parseIndent() < n {
+			if p.parseIndent() < indent {
 				return list
 			}
 
@@ -138,7 +144,7 @@ func (p *Parser) parseList(n int) []string {
 	}
 }
 
-func (p *Parser) parseSimpleAttrVal() string {
+func (p *Parser) parseText() string {
 	// Consume colon and whitespace.
 	p.nextItem()
 	p.nextItem()
