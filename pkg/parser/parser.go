@@ -69,8 +69,10 @@ func (p *Parser) Decode() (ALF, error) {
 
 			if attrName == "Names" {
 				alf.Names = append(alf.Names, item.Literal)
-			} else {
+			} else if attrName == "Notes" {
 				alf.Notes = append(alf.Notes, item.Literal)
+			} else if attrName == "Order" {
+				alf.Lyric.Order = append(alf.Lyric.Order, item.Literal)
 			}
 
 		case lexer.TokenEOF:
