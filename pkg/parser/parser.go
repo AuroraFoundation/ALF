@@ -15,7 +15,14 @@ type ALF struct {
 	Names  []string
 	Artist string
 	Album  string
+
+	Lyric Lyric
+
 	Notes  []string
+}
+
+type Lyric struct {
+	Order []string
 }
 
 // Parser implements a source code file parser in ALF.

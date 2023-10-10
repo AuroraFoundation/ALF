@@ -79,12 +79,21 @@ func TestParser(t *testing.T) {
 			},
 		},
 		{
-			"multiple lists",
+			"multiple lists items",
 			"Notes:\n\t- Note one.\n\t- Note two.",
 			parser.ALF{
 				Notes: []string{
 					"Note one.",
 					"Note two.",
+				},
+			},
+		},
+		{
+			"nested attributes Lyric/Order",
+			"Lyric:\n\tOrder:\n\t\t- Intro",
+			parser.ALF{
+				Lyric: parser.Lyric{
+					Order: []string{"Intro"},
 				},
 			},
 		},
