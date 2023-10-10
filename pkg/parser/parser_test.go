@@ -107,6 +107,15 @@ func TestParser(t *testing.T) {
 	}
 }
 
+func TestParserNonNestedAttr(t *testing.T) {
+	alf, err := parser.New(strings.NewReader("Order:\n\t- 1")).Decode()
+	if err == nil {
+		t.Fatal("must have end with error")
+	}
+
+	assertALF(t, alf, parser.ALF{})
+}
+
 func alfFromString(t *testing.T, s string) parser.ALF {
 	t.Helper()
 
